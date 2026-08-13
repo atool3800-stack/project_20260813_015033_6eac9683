@@ -113,6 +113,8 @@ class GitHubClient:
                 status = e.code
                 headers = {k.lower(): v for k, v in e.headers.items()}
                 payload = self._safe_json(e.read())
+                if status == 401:
+                    raise ValueError(f"Invalid API key: GitHub API returned 401 Unauthorized for {url}. Please check your GITHUB_TOKEN.")
                 # 4xx client errors that will never succeed -> abort
                 if 400 <= status < 500 and status not in (403, 429):
                     raise RuntimeError(f"GitHub API {status} for {url}: {payload}")

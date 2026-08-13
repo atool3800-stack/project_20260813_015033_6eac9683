@@ -139,6 +139,8 @@ class Api:
             except HTTPError as e:
                 if write:
                     self.last_write = time.time()
+                if e.code == 401:
+                    return 401, {"message": "Invalid API key: GitHub API returned 401 Unauthorized. Please check your GITHUB_TOKEN."}
                 if e.code in (403, 429):
                     retry_after = e.headers.get("Retry-After")
                     reset = e.headers.get("X-RateLimit-Reset")
