@@ -8,6 +8,8 @@ commits). In a production deployment the repo naturally accumulates this
 traffic; this script is provided so the dashboard can be exercised on a
 fresh repository and for local demos.
 
+Handles GitHub primary & secondary rate limits and paces write requests.
+
 Requires: GITHUB_TOKEN env var (or --token).
 """
 
@@ -25,6 +27,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 API_BASE = "https://api.github.com"
+WRITE_PACE = 1.0  # seconds between write calls to avoid secondary rate limits
 
 LABELS = [
     {"name": "bug", "color": "d73a4a", "description": "Something isn't working"},
@@ -108,8 +111,17 @@ COMMENT_TEMPLATES = [
 class Api:
     def __init__(self, token: str):
         self.token = token
+        self.last_write = 0.0
 
-    def request(self, method: str, url: str, body=None):
+    def _pace(self):
+        """Pace write requests to avoid GitHub secondary rate limits."""
+        elapsed = time.time() - self.last_write
+        if elapsed < WRITE_PACE:
+            time.sleep(WRITE_PACE - elapsed)
+
+    def request(self, method: str, url: str, body=None, write=False):
+        if write:
+            self._pace()
         data = json.dumps(body).encode() if body is not None else None
         req = Request(url, data=data, method=method, headers={
             "Authorization": f"Bearer {self.token}",
@@ -117,17 +129,32 @@ class Api:
             "User-Agent": "project-seed",
             "Content-Type": "application/json",
         })
-        for attempt in range(6):
+        for attempt in range(8):
             try:
                 with urlopen(req, timeout=60) as resp:
                     raw = resp.read().decode()
+                    if write:
+                        self.last_write = time.time()
                     return resp.status, (json.loads(raw) if raw else {})
             except HTTPError as e:
+                if write:
+                    self.last_write = time.time()
                 if e.code in (403, 429):
-                    reset = int(e.headers.get("X-RateLimit-Reset", 0) or time.time() + 60)
-                    time.sleep(max(reset - time.time(), 1) + 1)
-                    continue
-                if e.code >= 500 and attempt < 5:
+                    retry_after = e.headers.get("Retry-After")
+                    reset = e.headers.get("X-RateLimit-Reset")
+                    wait = None
+                    if retry_after:
+                        wait = float(retry_after)
+                    elif reset:
+                        wait = max(float(reset) - time.time(), 1) + 1
+                    if wait and wait <= 3600:
+                        print(f"  [rate-limit] sleeping {wait:.0f}s", flush=True)
+                        time.sleep(wait)
+                        continue
+                    if wait:
+                        print(f"  [rate-limit] huge wait {wait:.0f}s, aborting", flush=True)
+                        return e.code, {"message": "rate limited"}
+                if e.code >= 500 and attempt < 7:
                     time.sleep(2 ** attempt)
                     continue
                 return e.code, {"message": e.read().decode()[:400]}
@@ -143,7 +170,7 @@ def gh_url(owner, repo, path, **params):
 def run(cmd, cwd):
     r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
     if r.returncode != 0:
-        print(f"[git] {' '.join(cmd)} failed: {r.stderr[:300]}")
+        print(f"[git] {' '.join(cmd)} failed: {r.stderr[:300]}", flush=True)
     return r
 
 
@@ -152,10 +179,10 @@ def main():
     ap.add_argument("--owner", default="atool3800-stack")
     ap.add_argument("--repo", default="project_20260813_015033_6eac9683")
     ap.add_argument("--token", default=os.environ.get("GITHUB_TOKEN", ""))
-    ap.add_argument("--n-issues", type=int, default=220)
-    ap.add_argument("--n-prs", type=int, default=60)
-    ap.add_argument("--n-comments", type=int, default=650)
-    ap.add_argument("--n-commits", type=int, default=150)
+    ap.add_argument("--n-issues", type=int, default=150)
+    ap.add_argument("--n-prs", type=int, default=40)
+    ap.add_argument("--n-comments", type=int, default=500)
+    ap.add_argument("--n-commits", type=int, default=350)
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
 
@@ -168,9 +195,10 @@ def main():
     git = lambda cmd: run(cmd, repo_dir)
 
     # ---------- labels ----------
+    print("[seed] creating labels", flush=True)
     for lbl in LABELS:
-        api.request("POST", gh_url(args.owner, args.repo, "labels"), lbl)
-    print("[seed] labels ready")
+        api.request("POST", gh_url(args.owner, args.repo, "labels"), lbl, write=True)
+    print(f"[seed] labels ready ({len(LABELS)})", flush=True)
 
     # ---------- issues ----------
     issue_nums = []
@@ -182,13 +210,14 @@ def main():
         body = f"Auto-seeded issue {i+1}: {title}\n\nEnvironment: prod\nSeverity: {rng.choice(['low','medium','high'])}"
         status, issue = api.request("POST", gh_url(args.owner, args.repo, "issues"), {
             "title": f"{title} (#{i+1})", "body": body, "labels": labels,
-        })
+        }, write=True)
         if status in (200, 201) and "number" in issue:
             issue_nums.append(issue["number"])
             if state == "closed":
-                api.request("PATCH", gh_url(args.owner, args.repo, f"issues/{issue['number']}"), {"state": "closed"})
-        if (i + 1) % 50 == 0:
-            print(f"[seed] issues {i+1}/{args.n_issues}")
+                api.request("PATCH", gh_url(args.owner, args.repo, f"issues/{issue['number']}"),
+                            {"state": "closed"}, write=True)
+        if (i + 1) % 25 == 0:
+            print(f"[seed] issues {i+1}/{args.n_issues}", flush=True)
 
     # ---------- comments ----------
     for i in range(args.n_comments):
@@ -196,17 +225,15 @@ def main():
             break
         num = rng.choice(issue_nums)
         api.request("POST", gh_url(args.owner, args.repo, f"issues/{num}/comments"),
-                    {"body": rng.choice(COMMENT_TEMPLATES)})
-        if (i + 1) % 150 == 0:
-            print(f"[seed] comments {i+1}/{args.n_comments}")
+                    {"body": rng.choice(COMMENT_TEMPLATES)}, write=True)
+        if (i + 1) % 50 == 0:
+            print(f"[seed] comments {i+1}/{args.n_comments}", flush=True)
 
     # ---------- PRs (via git branches + API) ----------
-    # First ensure base branch is main
     git(["checkout", "main"])
     for i in range(args.n_prs):
         branch = f"feat/seed-pr-{i+1}"
         git(["checkout", "-b", branch, "main"])
-        # add a small file change
         with open(os.path.join(repo_dir, "data", f"seed_pr_{i+1}.txt"), "w") as f:
             f.write(f"seed content for PR {i+1}\n")
         git(["add", "data/seed_pr_{}.txt".format(i + 1)])
@@ -218,21 +245,21 @@ def main():
             "head": branch,
             "base": "main",
             "body": f"Seeded pull request {i+1}.",
-        })
+        }, write=True)
         if status in (200, 201) and "number" in pr:
-            # close ~25% and merge ~30%
             roll = rng.random()
             if roll < 0.30:
                 api.request("PUT", gh_url(args.owner, args.repo, f"pulls/{pr['number']}/merge"),
-                            {"merge_method": "squash"})
+                            {"merge_method": "squash"}, write=True)
                 git(["checkout", "main"])
                 git(["merge", branch])
                 git(["push", "origin", "main"])
             elif roll < 0.55:
-                api.request("PATCH", gh_url(args.owner, args.repo, f"pulls/{pr['number']}"), {"state": "closed"})
+                api.request("PATCH", gh_url(args.owner, args.repo, f"pulls/{pr['number']}"),
+                            {"state": "closed"}, write=True)
         git(["checkout", "main"])
-        if (i + 1) % 20 == 0:
-            print(f"[seed] PRs {i+1}/{args.n_prs}")
+        if (i + 1) % 10 == 0:
+            print(f"[seed] PRs {i+1}/{args.n_prs}", flush=True)
 
     # ---------- commits on main ----------
     git(["checkout", "main"])
@@ -243,7 +270,7 @@ def main():
         git(["commit", "-m", f"chore: sync commit {i+1} [skip ci]"])
     git(["push", "origin", "main"])
 
-    print("[seed] done")
+    print("[seed] done", flush=True)
 
 
 if __name__ == "__main__":
