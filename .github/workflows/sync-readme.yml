@@ -1,0 +1,62 @@
+# Daily GitHub efficiency metrics -> README sync
+#
+# Runs every day (00:30 UTC), plus manually, and regenerates the
+# "Daily Efficiency Report" block in README.md from the last 24h of
+# issues / PRs / comments / commits.
+name: Daily Efficiency Report Sync
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - ".github/workflows/sync-readme.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-readme
+  cancel-in-progress: false
+
+jobs:
+  sync-readme:
+    name: Generate & commit daily efficiency report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate daily efficiency report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/sync_metrics_to_readme.py \
+            --owner ${{ github.repository_owner }} \
+            --repo ${{ github.event.repository.name }} \
+            --token "$GITHUB_TOKEN" \
+            --out README.md
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "README.md is already up to date - nothing to commit."
+          else
+            N=$(grep -oP 'Total events processed: \K[0-9,]+' README.md | head -1)
+            git commit -m "docs: daily efficiency report $(date +%F) ($N events) [skip ci]"
+            git push
+          fi
