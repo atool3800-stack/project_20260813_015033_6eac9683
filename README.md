@@ -22,7 +22,36 @@ and refreshed on a daily schedule (see [`.github/workflows/sync-readme.yml`](.gi
 ## 📊 Daily Efficiency Report
 
 <!-- EFFICIENCY_REPORT_START -->
-_Report pending — run `python scripts/sync_metrics_to_readme.py` to generate._
+### 📊 Daily Efficiency Report — 2026-08-13
+
+_Statistics window: **2026-08-12 07:20 UTC** → **2026-08-13 07:20 UTC** · generated 2026-08-13 07:20 UTC_
+
+**Total events processed: 1**
+
+#### Key metrics
+
+| Metric | Value |
+|---|---|
+| Issues | 0 |
+| Pull requests | 0 |
+| Issue comments | 0 |
+| PR review comments | 0 |
+| Commits | 1 |
+| Issue avg first response time | — |
+| PR avg merge time | — |
+| Issues created / closed | 0 / 0 |
+| PRs created / closed | 0 / 0 |
+| PRs merged | 0 |
+| Active discussions | 0 |
+
+#### 🏷️ Label distribution
+
+_No labels found in the window._
+
+#### 🔥 Top 10 active threads
+
+_No active threads in the window._
+
 <!-- EFFICIENCY_REPORT_END -->
 
 ## Project Layout
