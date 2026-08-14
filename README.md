@@ -22,35 +22,57 @@ and refreshed on a daily schedule (see [`.github/workflows/sync-readme.yml`](.gi
 ## 📊 Daily Efficiency Report
 
 <!-- EFFICIENCY_REPORT_START -->
-### 📊 Daily Efficiency Report — 2026-08-13
+### 📊 Daily Efficiency Report — 2026-08-14
 
-_Statistics window: **2026-08-12 07:20 UTC** → **2026-08-13 07:20 UTC** · generated 2026-08-13 07:20 UTC_
+_Statistics window: **2026-08-13 03:06 UTC** → **2026-08-14 03:06 UTC** · generated 2026-08-14 03:06 UTC_
 
-**Total events processed: 1**
+**Total events processed: 786**
 
 #### Key metrics
 
 | Metric | Value |
 |---|---|
-| Issues | 0 |
-| Pull requests | 0 |
-| Issue comments | 0 |
+| Issues | 180 |
+| Pull requests | 1 |
+| Issue comments | 59 |
 | PR review comments | 0 |
-| Commits | 1 |
-| Issue avg first response time | — |
+| Commits | 546 |
+| Issue avg first response time | 9.3m |
 | PR avg merge time | — |
-| Issues created / closed | 0 / 0 |
-| PRs created / closed | 0 / 0 |
+| Issues created / closed | 180 / 58 |
+| PRs created / closed | 1 / 1 |
 | PRs merged | 0 |
-| Active discussions | 0 |
+| Active discussions | 6 |
 
 #### 🏷️ Label distribution
 
-_No labels found in the window._
+| Label | Count |
+|---|---|
+| documentation | 28 |
+| enhancement | 26 |
+| tech-debt | 26 |
+| help wanted | 24 |
+| question | 23 |
+| good first issue | 23 |
+| priority: medium | 23 |
+| priority: high | 21 |
+| bug | 19 |
+| priority: low | 18 |
 
 #### 🔥 Top 10 active threads
 
-_No active threads in the window._
+| # | Thread | Author | Comments | Last activity |
+|---|---|---|---|---|
+| 1 | [#12 Improve error messages for invalid API keys (#11)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/12) | atool3800-stack | 2 | 08-13 08:01 |
+| 2 | [#169 Add monitoring alert for API 429 responses (#84)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/169) | atool3800-stack | 2 | 08-13 08:01 |
+| 3 | [#129 Support timezone-aware timestamps in reports (#44)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/129) | atool3800-stack | 2 | 08-13 07:58 |
+| 4 | [#1 test issue](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/1) | atool3800-stack | 2 | 08-13 07:58 |
+| 5 | [#63 Add monitoring alert for API 429 responses (#62)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/63) | atool3800-stack | 2 | 08-13 07:58 |
+| 6 | [#130 Fix memory leak in the event stream processor (#45)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/130) | atool3800-stack | 2 | 08-13 07:57 |
+| 7 | [#161 Document rate-limit handling in the README (#76)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/161) | atool3800-stack | 2 | 08-13 07:57 |
+| 8 | [#5 Fix pagination bug on /api/events endpoint (#4)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/5) | atool3800-stack | 2 | 08-13 07:57 |
+| 9 | [#135 Fix pagination bug on /api/events endpoint (#50)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/135) | atool3800-stack | 1 | 08-13 08:01 |
+| 10 | [#180 Reduce cold-start latency for the metrics worker (#95)](https://github.com/atool3800-stack/project_20260813_015033_6eac9683/issues/180) | atool3800-stack | 1 | 08-13 08:01 |
 
 <!-- EFFICIENCY_REPORT_END -->
 
