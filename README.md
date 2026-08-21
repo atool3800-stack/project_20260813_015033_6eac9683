@@ -22,11 +22,11 @@ and refreshed on a daily schedule (see [`.github/workflows/sync-readme.yml`](.gi
 ## 📊 Daily Efficiency Report
 
 <!-- EFFICIENCY_REPORT_START -->
-### 📊 Daily Efficiency Report — 2026-08-20
+### 📊 Daily Efficiency Report — 2026-08-21
 
-_Statistics window: **2026-08-19 01:59 UTC** → **2026-08-20 01:59 UTC** · generated 2026-08-20 01:59 UTC_
+_Statistics window: **2026-08-20 02:08 UTC** → **2026-08-21 02:08 UTC** · generated 2026-08-21 02:08 UTC_
 
-**Total events processed: 1**
+**Total events processed: 0**
 
 #### Key metrics
 
@@ -36,7 +36,7 @@ _Statistics window: **2026-08-19 01:59 UTC** → **2026-08-20 01:59 UTC** · gen
 | Pull requests | 0 |
 | Issue comments | 0 |
 | PR review comments | 0 |
-| Commits | 1 |
+| Commits | 0 |
 | Issue avg first response time | — |
 | PR avg merge time | — |
 | Issues created / closed | 0 / 0 |
