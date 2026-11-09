@@ -22,9 +22,9 @@ and refreshed on a daily schedule (see [`.github/workflows/sync-readme.yml`](.gi
 ## 📊 Daily Efficiency Report
 
 <!-- EFFICIENCY_REPORT_START -->
-### 📊 Daily Efficiency Report — 2026-11-08
+### 📊 Daily Efficiency Report — 2026-11-09
 
-_Statistics window: **2026-11-07 06:31 UTC** → **2026-11-08 06:31 UTC** · generated 2026-11-08 06:31 UTC_
+_Statistics window: **2026-11-08 07:00 UTC** → **2026-11-09 07:00 UTC** · generated 2026-11-09 07:00 UTC_
 
 **Total events processed: 0**
 
